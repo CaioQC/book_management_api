@@ -1,15 +1,17 @@
 import { autores, livros } from "../models/index.js";
-
+import BadRequest from "../errors/BadRequest.js";
 class LivroController {
 
     static listarLivros = async (req, res, next) => {
         try {
-            const livrosResultado = await livros.find()
-                .populate("autor")
-                .exec();
+            const buscaLivros = livros.find();
 
-            res.status(200).json(livrosResultado);
-        } catch (erro) {
+            req.resultado = buscaLivros
+
+            next();
+        } 
+
+        catch (erro) {
             next(erro);
         }
     };
@@ -66,12 +68,16 @@ class LivroController {
 
     static listarLivroPorFiltro = async (req, res, next) => {
         try {
-            const busca = await processaBusca(req.query)
+            const busca = await processaBusca(req.query);
 
             if(busca !== null){
-                const livrosResultado = await livros.find(busca).populate("autor");
+                const livrosResultado = await livros
+                    .find(busca)
+                    .populate("autor");
 
-                res.status(200).send(livrosResultado);
+                req.resultado = livrosResultado;
+
+                next();
             }
 
             else{
